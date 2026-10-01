@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tile & Flooring Estimator
 
-## Getting Started
+A free web app that tells you how many tiles, boxes, adhesive bags, and kilograms of grout you need for a room. Enter the room size and tile size, and it also draws the floor layout so you can see exactly which tiles need cutting.
 
-First, run the development server:
+**Live demo:** https://tile-estimator-ph.vercel.app
+
+![Tile & Flooring Estimator screenshot](public/screenshot.png)
+
+## Features
+
+- Room size in meters or feet, with one-tap conversion
+- Common tile sizes (30×30, 40×40, 60×60, 80×80, 30×60) or custom sizes
+- Auto layout direction: compares both tile orientations and picks the one that needs fewer tiles
+- Results for tiles, boxes, adhesive bags, grout (kg), and optional tile cost in pesos
+- Adhesive coverage that adjusts to tile size, or a value you set yourself
+- Visual floor layout with whole tiles and cut tiles in different colors
+- Responsive layout that works on phones, with light and dark mode that follows the device
+
+## Tech stack
+
+- [Next.js](https://nextjs.org/) (App Router) and React
+- TypeScript
+- Tailwind CSS v4
+- Deployed on [Vercel](https://vercel.com/)
+
+## How the numbers work
+
+The calculation lives in one plain file, [`lib/estimate.ts`](lib/estimate.ts), with no React in it.
+
+- **Tiles:** columns and rows are `ceil((room + joint) / (tile + joint))`. Partial tiles at the edges count as one full tile. Waste (default 10%) is added on top, then rounded up.
+- **Boxes:** tiles to buy divided by pieces per box, rounded up.
+- **Adhesive:** room area × coverage (kg/m²) divided by bag size. When coverage is left blank, it uses a rule of thumb based on the longest tile side: 4 kg/m² up to 30 cm, 5 up to 45 cm, 6 up to 60 cm, and 7.5 above that.
+- **Grout:** `area × (L + W) / (L × W) × tile thickness × joint width × 1.6`, plus 10% extra. Dimensions are in millimeters and 1.6 is a typical grout density.
+
+These are estimates. Real coverage depends on the trowel notch, the floor, and the product, so check the product label or ask your supplier before ordering.
+
+## Run it locally
 
 ```bash
+git clone https://github.com/astralaster21/tile-estimator.git
+cd tile-estimator
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Then open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+app/             page, layout, and global styles (App Router)
+components/      Field (input), Stat (animated result card), LayoutDrawing (SVG)
+lib/estimate.ts  the calculation, no UI code
+```
 
-## Learn More
+## Roadmap
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Multiple rooms with a combined total
+- Print or save a quotation as PDF
+- Filipino and English language toggle
